@@ -23,7 +23,7 @@ A robust, scalable RESTful API for managing appointments and automatically sendi
 
 - **Backend**: Laravel 12+ (PHP 8.2+)
 - **Authentication**: Laravel Sanctum
-- **Database**: MySQL 8+ / PostgreSQL 13+ / SQLite (development)
+- **Database**: MySQL 8+ / SQLite (development)
 - **Queue System**: Redis with Laravel Queues
 - **Containerization**: Docker with Laravel Sail
 - **Mail Testing**: Mailpit (for local development)
