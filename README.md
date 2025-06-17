@@ -33,9 +33,9 @@ A robust, scalable RESTful API for managing appointments and automatically sendi
 
 ### Prerequisites
 
-- **For macOS/Linux**: Docker and Docker Compose
-- **For Windows**: Docker Desktop with WSL2 enabled
+- Docker and Docker Compose
 - Git
+- **For Windows**: Docker Desktop with WSL2 enabled
 
 ### Installation
 
@@ -45,90 +45,39 @@ A robust, scalable RESTful API for managing appointments and automatically sendi
    cd appointment-reminder-system
    ```
 
-2. **Install Dependencies**
-   
-   **For Windows/WSL or standard Docker:**
-   ```bash
-   docker run --rm \
-       -v "$(pwd):/var/www/html" \
-       -w /var/www/html \
-       composer:latest \
-       composer install --ignore-platform-reqs
-   ```
-   
-   **For macOS/Linux with Sail:**
-   ```bash
-   docker run --rm \
-       -u "$(id -u):$(id -g)" \
-       -v "$(pwd):/var/www/html" \
-       -w /var/www/html \
-       laravelsail/php82-composer:latest \
-       composer install --ignore-platform-reqs
-   ```
-
-3. **Setup Environment Configuration**
+2. **Setup Environment Configuration**
    ```bash
    cp .env.example .env
    ```
 
-4. **Start the Application**
-   
-   **For Windows/WSL or standard Docker:**
+3. **Start the Application**
    ```bash
    docker-compose up -d
    ```
-   
-   **For macOS/Linux with Sail:**
+
+4. **Install Dependencies**
    ```bash
-   ./vendor/bin/sail up -d
+   docker-compose exec laravel.test composer install
    ```
 
 5. **Generate Application Key**
-   
-   **For Windows/WSL or standard Docker:**
    ```bash
    docker-compose exec laravel.test php artisan key:generate
    ```
-   
-   **For macOS/Linux with Sail:**
-   ```bash
-   ./vendor/bin/sail artisan key:generate
-   ```
 
 6. **Run Database Migrations**
-   
-   **For Windows/WSL or standard Docker:**
    ```bash
    docker-compose exec laravel.test php artisan migrate
    ```
-   
-   **For macOS/Linux with Sail:**
-   ```bash
-   ./vendor/bin/sail artisan migrate
-   ```
 
 7. **Start the Queue Worker**
-   
-   **For Windows/WSL or standard Docker:**
    ```bash
    docker-compose exec laravel.test php artisan queue:work
    ```
-   
-   **For macOS/Linux with Sail:**
-   ```bash
-   ./vendor/bin/sail artisan queue:work
-   ```
 
 8. **Start the Scheduler (for recurring appointments)**
-   
-   **For Windows/WSL or standard Docker:**
    ```bash
    docker-compose exec laravel.test php artisan schedule:work
-   ```
-   
-   **For macOS/Linux with Sail:**
-   ```bash
-   ./vendor/bin/sail artisan schedule:work
    ```
 
 ### Access Points
@@ -232,52 +181,20 @@ curl -X POST http://localhost/api/appointments \
 
 ### Create Test Data
 
-**For Windows/WSL or standard Docker:**
 ```bash
-# Create a user first, then get the user ID and run:
-docker-compose exec laravel.test php artisan app:test-reminder-system --user-id=1
-```
-
-**For macOS/Linux with Sail:**
-```bash
-# Create a user first, then get the user ID and run:
-./vendor/bin/sail artisan app:test-reminder-system --user-id=1
+docker-compose exec laravel.test php artisan app:test-reminder-system
 ```
 
 ### Generate Recurring Appointments
 
-**For Windows/WSL or standard Docker:**
 ```bash
 docker-compose exec laravel.test php artisan app:generate-recurring-appointments --days=30
 ```
 
-**For macOS/Linux with Sail:**
-```bash
-./vendor/bin/sail artisan app:generate-recurring-appointments --days=30
-```
-
-### Process Due Reminders
-
-**For Windows/WSL or standard Docker:**
-```bash
-docker-compose exec laravel.test php artisan app:process-due-reminders --limit=100
-```
-
-**For macOS/Linux with Sail:**
-```bash
-./vendor/bin/sail artisan app:process-due-reminders --limit=100
-```
-
 ### Run Tests
 
-**For Windows/WSL or standard Docker:**
 ```bash
 docker-compose exec laravel.test php artisan test
-```
-
-**For macOS/Linux with Sail:**
-```bash
-./vendor/bin/sail artisan test
 ```
 
 ## Configuration
@@ -309,14 +226,8 @@ MAIL_PORT=1025
 
 The application uses Redis queues for processing reminders asynchronously. Make sure to run the queue worker:
 
-**For Windows/WSL or standard Docker:**
 ```bash
 docker-compose exec laravel.test php artisan queue:work --tries=3 --backoff=60
-```
-
-**For macOS/Linux with Sail:**
-```bash
-./vendor/bin/sail artisan queue:work --tries=3 --backoff=60
 ```
 
 ### Scheduler Configuration
@@ -347,7 +258,6 @@ For production, set up a cron job to run the Laravel scheduler:
 ### Console Commands
 
 - **GenerateRecurringAppointments** - Creates recurring appointment instances
-- **ProcessDueReminders** - Processes due custom reminders
 - **TestReminderSystem** - Creates test data for verification
 
 ## Troubleshooting
@@ -355,9 +265,8 @@ For production, set up a cron job to run the Laravel scheduler:
 ### Common Issues
 
 1. **Queue not processing**
-   - **Windows/WSL**: Check Redis: `docker-compose exec redis redis-cli ping`
-   - **Sail**: Check Redis: `./vendor/bin/sail redis redis-cli ping`
-   - Start queue worker as shown in Configuration section
+   - Check Redis: `docker-compose exec redis redis-cli ping`
+   - Start queue worker: `docker-compose exec laravel.test php artisan queue:work`
 
 2. **Emails not sending**
    - Check Mailpit at http://localhost:8025
@@ -368,8 +277,7 @@ For production, set up a cron job to run the Laravel scheduler:
    - Verify timezone strings are valid PHP timezones
 
 4. **Database connection issues**
-   - **Windows/WSL**: Check containers: `docker-compose ps`
-   - **Sail**: Check containers: `./vendor/bin/sail ps`
+   - Check containers: `docker-compose ps`
    - Verify database credentials in `.env`
 
 5. **WSL2 Performance Issues (Windows users)**
@@ -378,26 +286,15 @@ For production, set up a cron job to run the Laravel scheduler:
 
 ### Logs
 
-**For Windows/WSL or standard Docker:**
 ```bash
-docker-compose exec laravel.test php artisan log:show
-```
+# View application logs
+docker-compose exec laravel.test tail -f storage/logs/laravel.log
 
-**For macOS/Linux with Sail:**
-```bash
-./vendor/bin/sail artisan log:show
-```
-
-Check queue failures:
-
-**For Windows/WSL or standard Docker:**
-```bash
+# Check queue failures
 docker-compose exec laravel.test php artisan queue:failed
-```
 
-**For macOS/Linux with Sail:**
-```bash
-./vendor/bin/sail artisan queue:failed
+# Restart failed jobs
+docker-compose exec laravel.test php artisan queue:retry all
 ```
 
 ## Windows-Specific Notes
@@ -408,9 +305,10 @@ docker-compose exec laravel.test php artisan queue:failed
 3. Clone the project inside WSL2 filesystem for optimal performance
 4. Use Windows Terminal or WSL2 terminal for commands
 
-### PowerShell Commands (Alternative)
-If you prefer PowerShell, you can use:
+### PowerShell Commands
+You can use PowerShell for all commands:
 ```powershell
 docker-compose exec laravel.test php artisan migrate
 docker-compose exec laravel.test php artisan queue:work
+docker-compose exec laravel.test php artisan app:test-reminder-system
 ```
